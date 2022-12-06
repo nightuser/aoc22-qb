@@ -1,18 +1,20 @@
 DEFINT A-Z
+
+CONST markerLen = 14
+
 DECLARE FUNCTION GetSymbol (fileNum, i)
 
-CLS
-
 DIM count(25) AS INTEGER
+' $STATIC
+DIM last(markerLen - 1) AS INTEGER
+lastPos = 0
 
-markerLen = 14
-
-OPEN "in.txt" FOR RANDOM AS #1 LEN = 1
+OPEN "in.txt" FOR BINARY AS #1
 uniq = 0
 FOR i = 1 TO LOF(1) - 2
     x = GetSymbol(1, i)
     IF i > markerLen THEN
-        y = GetSymbol(1, i - markerLen)
+        y = last(lastPos)
         count(y) = count(y) - 1
         IF count(y) = 0 THEN
             uniq = uniq - 1
@@ -22,13 +24,15 @@ FOR i = 1 TO LOF(1) - 2
     IF count(x) = 1 THEN
         uniq = uniq + 1
     END IF
+    last(lastPos) = x
+    lastPos = (lastPos + 1) MOD markerLen
     IF uniq = markerLen THEN
         ans = i
         EXIT FOR
     END IF
 NEXT
 CLOSE #1
-PRINT "Ans1 = "; ans
+PRINT "Ans2 = "; ans
 
 END
 
