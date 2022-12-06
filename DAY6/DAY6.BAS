@@ -1,16 +1,26 @@
-DEFINT A-Z
+' $INCLUDE: '..\COMMON\STRUTILS.BI'
 
-CONST markerLen = 4
+DEFINT A-Z
 
 CR$ = CHR$(13)
 LF$ = CHR$(10)
 
 DIM count(25) AS INTEGER
-' $STATIC
+
+cmdLn$ = COMMAND$
+DIM ps$(2)
+n = SplitBy(cmdLn$, " ", ps$())
+IF n <> 2 THEN
+    PRINT "Please specify the input file and marker length"
+    END
+END IF
+fileName$ = ps$(0)
+markerLen = VAL(ps$(1))
+
 DIM last(markerLen - 1) AS INTEGER
 lastPos = 0
 
-OPEN "in.txt" FOR INPUT AS #1
+OPEN fileName$ FOR INPUT AS #1
 uniq = 0
 i = 0
 DO WHILE NOT EOF(1)
