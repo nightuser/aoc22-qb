@@ -4,12 +4,10 @@ DECLARE SUB MoveHead (dir$)
 DECLARE SUB MoveTail ()
 DECLARE SUB SetVisited (x, y)
 
-DIM SHARED visited(32766) AS INTEGER
+REDIM SHARED visited(32766) AS INTEGER
 
 DIM SHARED hx, hy
 DIM SHARED tx, ty
-hx = 0: hy = 0
-tx = 0: ty = 0
 DIM SHARED totalVisited AS LONG
 
 SetVisited 0, 0

@@ -6,7 +6,7 @@ DECLARE SUB MoveHead (dir$)
 DECLARE SUB MoveTail (j)
 DECLARE SUB SetVisited (x, y)
 
-DIM SHARED visited(32766) AS INTEGER
+REDIM SHARED visited(32766) AS INTEGER
 
 DIM SHARED kx(Knots - 1)
 DIM SHARED ky(Knots - 1)
@@ -14,8 +14,6 @@ DIM SHARED totalVisited AS LONG
 
 SetVisited 0, 0
 totalVisited = 1
-
-CLS
 
 OPEN "in.txt" FOR INPUT AS #1
 DO WHILE NOT EOF(1)
