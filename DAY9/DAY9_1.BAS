@@ -22,7 +22,7 @@ DO WHILE NOT EOF(1)
     shift = VAL(RIGHT$(ln$, LEN(ln$) - 2))
     ' PRINT dir$; shift
     FOR i = 0 TO shift - 1
-        MoveHead dir$, 1
+        MoveHead dir$
         MoveTail
     NEXT
 LOOP
