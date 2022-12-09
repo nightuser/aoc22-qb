@@ -26,11 +26,7 @@ RANDOMIZE TIMER
 
 DIM SHARED DirsPool(255) AS DirT
 DIM SHARED DirsPoolSize AS INTEGER
-DirsPoolSize = 0
-
 DIM ps$(2)
-parseLS = 0
-
 rootID = AddDir("ROOT", -1)
 currentDirID = rootID
 
@@ -183,7 +179,7 @@ SUB Sort (arr&(), l, r)
 END SUB
 
 FUNCTION SplitBy (s$, c$, ps$())
-   posFrom = 1
+    posFrom = 1
     sLen = LEN(s$)
     i = 0
     DO WHILE posFrom <= sLen
