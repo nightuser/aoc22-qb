@@ -1,5 +1,11 @@
 DEFINT A-Z
 
+CONST MaxSize = 20000
+CONST MaxPackets = 350
+
+CONST NodeNum = 0
+CONST NodeList = 1
+
 DECLARE FUNCTION Compare (id1, id2)
 DECLARE FUNCTION CompareNumList (id1, cur2)
 DECLARE FUNCTION ToStr$ (id)
@@ -15,18 +21,13 @@ DECLARE SUB AddPacket (id)
 DECLARE SUB SortPackets (l, r)
 DECLARE FUNCTION PartitionPackets (l, r)
 
-CONST MaxSize = 20000
-
-CONST NodeNum = 0
-CONST NodeList = 1
-
 REDIM SHARED nodesT(1 TO MaxSize)
 REDIM SHARED nodesVal(1 TO MaxSize)
 REDIM SHARED nodesNxt(1 TO MaxSize)
 DIM SHARED nodesLen
 
-DIM SHARED packets(350)
-DIM SHARED PacketsLen
+DIM SHARED packets(1 TO MaxPackets)
+DIM SHARED packetsLen
 
 RANDOMIZE TIMER
 
@@ -40,12 +41,12 @@ index = 1
 OPEN "in.txt" FOR INPUT AS #1
 DO WHILE NOT EOF(1)
     DO
-        LINE INPUT #1, ln1$
-    LOOP WHILE LEN(ln1$) = 0
-    n1 = Parse(ln1$, 1, id1)
+        LINE INPUT #1, ln$
+    LOOP WHILE LEN(ln$) = 0
+    n1 = Parse(ln$, 1, id1)
     AddPacket id1
-    LINE INPUT #1, ln2$
-    n2 = Parse(ln2$, 1, id2)
+    LINE INPUT #1, ln$
+    n2 = Parse(ln$, 1, id2)
     AddPacket id2
     res = Compare(id1, id2)
     IF res <= 0 THEN
@@ -57,14 +58,14 @@ CLOSE #1
 
 PRINT "Ans1 = "; ans1
 
-SortPackets 0, PacketsLen - 1
+SortPackets 1, packetsLen
 
 ans2 = 1
-FOR i = 0 TO PacketsLen - 1
+FOR i = 1 TO packetsLen
     packet = packets(i)
     ' PRINT ToStr$(packet)
     IF packet = div1 OR packet = div2 THEN
-        ans2 = ans2 * (i + 1)
+        ans2 = ans2 * i
     END IF
 NEXT
 
@@ -73,8 +74,8 @@ PRINT "Ans2 = "; ans2
 END
 
 SUB AddPacket (id)
-    packets(PacketsLen) = id
-    PacketsLen = PacketsLen + 1
+    packetsLen = packetsLen + 1
+    packets(packetsLen) = id
 END SUB
 
 FUNCTION Compare (id1, id2)
