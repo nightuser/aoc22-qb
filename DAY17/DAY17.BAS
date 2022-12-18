@@ -1,20 +1,22 @@
 DEFINT A-Z
-DECLARE FUNCTION GetReachable (x, y)
-DECLARE SUB SetReachable (x, y)
-DECLARE SUB SetGrid (grid(), x, y)
-DECLARE FUNCTION GetGrid (grid(), x, y)
+
 DECLARE SUB InitGrid (grid(), rshape, top, dirPos)
-DECLARE FUNCTION DoStep$ (grid(), rshape, top, dirPos, skipProfile)
-DECLARE SUB QueuePush (x, y)
-DECLARE SUB QueuePop (x, y)
-DECLARE FUNCTION QueueEmpty ()
 DECLARE SUB PlaceRock (grid(), rshape, rx, ry)
+DECLARE SUB QueuePop (x, y)
+DECLARE SUB QueuePush (x, y)
+DECLARE SUB SetGrid (grid(), x, y)
+DECLARE SUB SetReachable (x, y)
 DECLARE FUNCTION CanMove (grid(), rshape, rx, ry, dx, dy)
+DECLARE FUNCTION DoStep$ (grid(), rshape, top, dirPos, skipProfile)
 DECLARE FUNCTION GetDir (dirPos)
+DECLARE FUNCTION GetGrid (grid(), x, y)
+DECLARE FUNCTION GetReachable (x, y)
+DECLARE FUNCTION QueueEmpty ()
 
 CONST GridWidth = 7
 CONST MaxHeight = 10000
 CONST MaxProfileHeight = 100
+CONST TotalShapes = 5
 
 TYPE PointT
     x AS INTEGER
@@ -85,6 +87,10 @@ FOR i = 1 TO GridWidth
     pow = 2 * pow
 NEXT
 
+DIM SHARED reachable(MaxProfileHeight)
+DIM SHARED queue(GridWidth * MaxProfileHeight - 1) AS PointT
+DIM SHARED queueStart, queueEnd
+
 DIM SHARED dirs AS STRING
 DIM SHARED dirsLen
 
@@ -93,13 +99,9 @@ LINE INPUT #1, dirs
 CLOSE #1
 dirsLen = LEN(dirs)
 
-DIM SHARED reachable(MaxProfileHeight)
-DIM SHARED queue(GridWidth * MaxProfileHeight - 1) AS PointT
-DIM SHARED queueStart, queueEnd
-
 InitGrid grid1(), rshape1, top1, dirPos1
 FOR i = 1 TO 2022
-    ignore$ = DoStep(grid1(), rshape1, top1, dirPos1, -1)
+    ignored$ = DoStep(grid1(), rshape1, top1, dirPos1, -1)
 NEXT
 
 PRINT "Ans1 = "; top1
@@ -110,7 +112,7 @@ InitGrid grid1(), rshape1, top1, dirPos1
 InitGrid grid2(), rshape2, top2, dirPos2
 DO
     prof1$ = DoStep(grid1(), rshape1, top1, dirPos1, 0)
-    ignore$ = DoStep(grid2(), rshape2, top2, dirPos2, -1)
+    ignored$ = DoStep(grid2(), rshape2, top2, dirPos2, -1)
     prof2$ = DoStep(grid2(), rshape2, top2, dirPos2, 0)
     IF prof1$ = prof2$ THEN
         EXIT DO
@@ -150,7 +152,7 @@ PRINT LTRIM$(STR$(lam)); " = ";
 INPUT "", rest
 
 FOR i = 1 TO rest - 1
-    ignore$ = DoStep(grid1(), rshape1, top1, dirPos1, -1)
+    ignored$ = DoStep(grid1(), rshape1, top1, dirPos1, -1)
 NEXT
 
 PRINT "top = "; top1
@@ -188,6 +190,8 @@ FUNCTION CanMove (grid(), rshape, rx, ry, dx, dy)
 END FUNCTION
 
 FUNCTION DoStep$ (grid(), rshape, top, dirPos, skipProfile)
+    DIM profile AS STRING * 100
+
     rx = 3
     ry = top + 4
 
@@ -209,54 +213,53 @@ FUNCTION DoStep$ (grid(), rshape, top, dirPos, skipProfile)
     END IF
 
     IF NOT skipProfile THEN
-        DIM profile AS STRING * 100
-    queueStart = 0
-    queueEnd = 0
-    ERASE reachable
-    QueuePush 1, 0
-    SetReachable 1, 0
-    DO WHILE NOT QueueEmpty
-        QueuePop x, dy
-        y = top + 1 - dy
-        IF x > 1 THEN
-            IF NOT GetGrid(grid(), x - 1, y) AND NOT GetReachable(x - 1, dy) THEN
-                SetReachable x - 1, dy
-                QueuePush x - 1, dy
+        queueStart = 0
+        queueEnd = 0
+        ERASE reachable
+        SetReachable 1, 0
+        QueuePush 1, 0
+        DO WHILE NOT QueueEmpty
+            QueuePop x, dy
+            y = top + 1 - dy
+            IF x > 1 THEN
+                IF NOT GetGrid(grid(), x - 1, y) AND NOT GetReachable(x - 1, dy) THEN
+                    SetReachable x - 1, dy
+                    QueuePush x - 1, dy
+                END IF
             END IF
-        END IF
-        IF x < GridWidth THEN
-            IF NOT GetGrid(grid(), x + 1, y) AND NOT GetReachable(x + 1, dy) THEN
-                SetReachable x + 1, dy
-                QueuePush x + 1, dy
+            IF x < GridWidth THEN
+                IF NOT GetGrid(grid(), x + 1, y) AND NOT GetReachable(x + 1, dy) THEN
+                    SetReachable x + 1, dy
+                    QueuePush x + 1, dy
+                END IF
             END IF
-        END IF
-        IF y > 1 THEN
-            IF NOT GetGrid(grid(), x, y - 1) AND NOT GetReachable(x, dy + 1) THEN
-                SetReachable x, dy + 1
-                QueuePush x, dy + 1
+            IF y > 1 THEN
+                IF NOT GetGrid(grid(), x, y - 1) AND NOT GetReachable(x, dy + 1) THEN
+                    SetReachable x, dy + 1
+                    QueuePush x, dy + 1
+                END IF
             END IF
-        END IF
-    LOOP
+        LOOP
 
-    profile = SPACE$(MaxProfileLen)
-    FOR dy = 1 TO MaxProfileHeight - 1
-        res = 0
-        pow = 1
-        FOR x = 1 TO GridWidth
-            IF GetReachable(x, dy) THEN
-                res = res + pow
+        profile = SPACE$(MaxProfileLen)
+        FOR dy = 1 TO MaxProfileHeight - 1
+            res = 0
+            pow = 1
+            FOR x = 1 TO GridWidth
+                IF GetReachable(x, dy) THEN
+                    res = res + pow
+                END IF
+                pow = 2 * pow
+            NEXT
+            IF res = 0 THEN
+                EXIT FOR
             END IF
-            pow = 2 * pow
+            MID$(profile$, dy, 1) = CHR$(res)
         NEXT
-        IF res = 0 THEN
-            EXIT FOR
-        END IF
-        MID$(profile$, dy, 1) = CHR$(res)
-    NEXT
     END IF
 
     rshape = rshape + 1
-    IF rshape = 5 THEN
+    IF rshape = TotalShapes THEN
         rshape = 0
     END IF
 
